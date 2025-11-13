@@ -1,30 +1,22 @@
 <?php
-// User.php
+require_once __DIR__.'/../config/Database.php';
 class User {
     private $conn;
-    private $table = "users";
-
-    public $id;
-    public $email;
-    public $password;
-
-    public function __construct($db) {
-        $this->conn = $db;
+    public function __construct() {
+        $db = new Database();
+        $this->conn = $db->connect();
     }
-
+    public function register($name, $email, $password, $role) {
+        $hash = password_hash($password, PASSWORD_DEFAULT);
+        $stmt = $this->conn->prepare("INSERT INTO User (name, email, password_hash, role) VALUES (?, ?, ?, ?)");
+        return $stmt->execute([$name, $email, $hash, $role]);
+    }
     public function login($email, $password) {
-        $query = "SELECT id, password_hash FROM " . $this->table . " WHERE email = :email LIMIT 1";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":email", $email);
-        $stmt->execute();
-
-        if ($stmt->rowCount() == 1) {
-            $row = $stmt->fetch(PDO::FETCH_ASSOC);
-            if (password_verify($password, $row["password_hash"])) {
-                // Authentication successful
-                $_SESSION['user_id'] = $row["id"];
-                return true;
-            }
+        $stmt = $this->conn->prepare("SELECT user_id, password_hash FROM User WHERE email = ?");
+        $stmt->execute([$email]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($user && password_verify($password, $user['password_hash'])) {
+            return $user['user_id'];
         }
         return false;
     }

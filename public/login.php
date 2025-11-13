@@ -1,27 +1,20 @@
 <?php
-// login.php
 session_start();
-require_once "Database.php";
-require_once "User.php";
-
-$db = (new Database())->connect();
-$user = new User($db);
-
+require_once '../controllers/UserController.php';
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $email = $_POST["email"] ?? '';
-    $password = $_POST["password"] ?? '';
-    if ($user->login($email, $password)) {
-        header("Location: dashboard.php");
-        exit;
+    $ctrl = new UserController();
+    $user_id = $ctrl->loginUser($_POST['email'], $_POST['password']);
+    if ($user_id) {
+        $_SESSION['user_id'] = $user_id;
+        echo "Login successful!";
+        // header('Location: dashboard.php');  // Implement your dashboard
     } else {
-        echo "Invalid login credentials.";
+        echo "Login failed";
     }
 }
 ?>
-<!-- Simple login form -->
-<form method="post" action="">
-    <input type="email" name="email" required placeholder="Email" />
-    <input type="password" name="password" required placeholder="Password" />
+<form method="post">
+    <input name="email" type="email" required>
+    <input name="password" type="password" required>
     <button type="submit">Login</button>
 </form>
-?>
