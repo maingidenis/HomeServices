@@ -20,6 +20,6 @@ class Appointment {
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    // Add update, delete, by-client, by-service methods as needed
+    
 }
 ?>
