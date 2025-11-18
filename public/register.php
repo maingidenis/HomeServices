@@ -3,12 +3,21 @@ require_once __DIR__ . '/../app/controllers/UserController.php';
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $ctrl = new UserController();
     $result = $ctrl->registerUser($_POST['name'], $_POST['email'], $_POST['password'], $_POST['role']);
-    echo $result ? "Registration Successful" : "Error!";
+    if ($result) {
+        echo '<script>
+            alert("Registration Successful");
+            window.location.href = "index.php?page=login&msg=registered";
+        </script>';
+        exit;
+    } else {
+        echo '<script>alert("Error! Registration failed.");</script>';
+    }
+    if ($result) {
+        header('Location: index.php?page=login&msg=registered');
+        exit;
+    }
 }
-if ($result) {
-    header('Location: index.php?page=login&msg=registered');
-    exit;
-}
+
 
 ?>
 <form method="post">
