@@ -8,30 +8,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $user_id = $ctrl->loginUser($_POST['email'], $_POST['password']);
     if ($user_id) {
         $_SESSION['user_id'] = $user_id;
-        echo <<<SCRIPT
-<script>
-(function(){
-  var msg = document.createElement('div');
-  msg.textContent = 'Login successful';
-  msg.style = 'position:fixed;top:20px;right:20px;padding:12px 18px;background:#28a745;color:#fff;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.2);font-family:sans-serif;z-index:99999;';
-  document.body.appendChild(msg);
-  setTimeout(function(){ window.location.href = 'index.php?page=dashboard'; }, 1200);
-})();
-</script>
-SCRIPT;
+        echo "<script>alert('Login successful'); window.location.href='index.php?page=dashboard';</script>";
         exit;
     } else {
-        echo <<<SCRIPT
-<script>
-(function(){
-  var msg = document.createElement('div');
-  msg.textContent = 'Login failed: invalid email or password';
-  msg.style = 'position:fixed;top:20px;right:20px;padding:12px 18px;background:#dc3545;color:#fff;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.2);font-family:sans-serif;z-index:99999;';
-  document.body.appendChild(msg);
-  setTimeout(function(){ msg.remove(); }, 5000);
-})();
-</script>
-SCRIPT;
+        echo "<script>alert('Login failed: invalid email or password');</script>";
     }
 }
 ?>
