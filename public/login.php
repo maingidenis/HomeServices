@@ -8,8 +8,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $user_id = $ctrl->loginUser($_POST['email'], $_POST['password']);
     if ($user_id) {
         $_SESSION['user_id'] = $user_id;
-        echo "Login successful!";
-        // header('Location: dashboard.php');  // Implement your dashboard
+        header('Location: index.php?page=dashboard');
+        exit;
     } else {
         echo "Login failed";
     }

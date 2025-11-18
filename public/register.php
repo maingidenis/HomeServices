@@ -5,6 +5,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $result = $ctrl->registerUser($_POST['name'], $_POST['email'], $_POST['password'], $_POST['role']);
     echo $result ? "Registration Successful" : "Error!";
 }
+if ($result) {
+    header('Location: index.php?page=login&msg=registered');
+    exit;
+}
+
 ?>
 <form method="post">
     <input name="name" type="text" required>

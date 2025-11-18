@@ -20,5 +20,17 @@ class User {
         }
         return false;
     }
+    public function updateHealthStatus($user_id, $status) {
+        $stmt = $this->conn->prepare("UPDATE User SET health_status = ? WHERE user_id = ?");
+        return $stmt->execute([$status, $user_id]);
+    }
+
+    // Dashboard related methods
+    public function countAll() {
+        $stmt = $this->conn->query('SELECT COUNT(*) FROM User');
+        return $stmt->fetchColumn();
+    }
+    
+    
 }
 ?>

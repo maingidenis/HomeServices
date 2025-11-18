@@ -9,5 +9,9 @@ class UserController {
         $model = new User();
         return $model->login($email, $password);
     }
+    public function setHealthStatus($user_id, $status) {
+        $model = new User();
+        return $model->updateHealthStatus($user_id, $status);
+    }    
 }
 ?>
