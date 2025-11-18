@@ -17,9 +17,32 @@ $userModel = new User();
 $appointmentModel = new Appointment();
 $serviceModel = new Service();
 
-$totalUsers = $userModel->countAll();
-$totalAppointments = $appointmentModel->countAll();
-$totalServices = $serviceModel->countAll();
+function safeCount($model, $methods = ['countAll', 'count', 'getCount', 'total'])
+{
+    foreach ($methods as $m) {
+        if (method_exists($model, $m)) {
+            $res = $model->$m();
+            if (is_numeric($res)) {
+                return (int)$res;
+            }
+            if (is_array($res) || $res instanceof Countable) {
+                return count($res);
+            }
+        }
+    }
+    if (method_exists($model, 'getAll')) {
+        $res = $model->getAll();
+        if (is_array($res) || $res instanceof Countable) {
+            return count($res);
+        }
+    }
+    // fallback to zero if no suitable method exists
+    return 0;
+}
+
+$totalUsers = safeCount($userModel);
+$totalAppointments = safeCount($appointmentModel);
+$totalServices = safeCount($serviceModel);
 ?>
 
 <!DOCTYPE html>
