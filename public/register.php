@@ -1,5 +1,5 @@
 <?php
-require_once '/../app/controllers/UserController.php';
+require_once __DIR__ . '/../app/controllers/UserController.php';
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $ctrl = new UserController();
     $result = $ctrl->registerUser($_POST['name'], $_POST['email'], $_POST['password'], $_POST['role']);
