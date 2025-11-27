@@ -39,6 +39,19 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <input name="email" type="email" required placeholder="Email">
     <input name="password" type="password" required placeholder="Password">
     <button type="submit">Login</button>
+
+            <!-- OAuth Login Buttons -->
+        <div style="margin-top: 20px; text-align: center;">
+            <p style="margin: 15px 0; color: #666;">Or sign in with:</p>
+            
+            <a href="oauth_login.php?provider=google" style="display: inline-block; padding: 12px 24px; margin: 5px; background-color: #4285F4; color: white; text-decoration: none; border-radius: 4px; font-weight: bold;">
+                🔷 Sign in with Google
+            </a>
+            
+            <a href="oauth_login.php?provider=facebook" style="display: inline-block; padding: 12px 24px; margin: 5px; background-color: #1877F2; color: white; text-decoration: none; border-radius: 4px; font-weight: bold;">
+                📘 Sign in with Facebook
+            </a>
+        </div>
 </form>
 </body>
 </html>
