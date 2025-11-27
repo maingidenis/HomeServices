@@ -30,6 +30,47 @@ class User {
         $stmt = $this->conn->query('SELECT COUNT(*) FROM User');
         return $stmt->fetchColumn();
     }
+
+        // OAuth Methods
+    public function loginWithOAuth($provider, $oauth_id, $email, $name, $picture) {
+        // Check if user exists with this OAuth provider
+        $user = $this->findByOAuth($provider, $oauth_id);
+        
+        if ($user) {
+            // User exists, return user ID
+            return $user['user_id'];
+        }
+        
+        // Check if user exists with this email
+        if ($email) {
+            $stmt = $this->conn->prepare("SELECT user_id FROM User WHERE email = ?");
+            $stmt->execute([$email]);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($user) {
+                // Link OAuth to existing account
+                $this->linkOAuthAccount($user['user_id'], $provider, $oauth_id, $picture);
+                return $user['user_id'];
+            }
+        }
+        
+        // Create new user
+        $password_hash = password_hash(bin2hex(random_bytes(16)), PASSWORD_DEFAULT);
+        $stmt = $this->conn->prepare("INSERT INTO User (name, email, password_hash, role, oauth_provider, oauth_id, profile_picture) VALUES (?, ?, ?, 'client', ?, ?, ?)");
+        $stmt->execute([$name, $email, $password_hash, $provider, $oauth_id, $picture]);
+        return $this->conn->lastInsertId();
+    }
+    
+    public function findByOAuth($provider, $oauth_id) {
+        $stmt = $this->conn->prepare("SELECT * FROM User WHERE oauth_provider = ? AND oauth_id = ?");
+        $stmt->execute([$provider, $oauth_id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+    
+    public function linkOAuthAccount($user_id, $provider, $oauth_id, $picture = null) {
+        $stmt = $this->conn->prepare("UPDATE User SET oauth_provider = ?, oauth_id = ?, profile_picture = ? WHERE user_id = ?");
+        return $stmt->execute([$provider, $oauth_id, $picture, $user_id]);
+    }
     
     
 }
