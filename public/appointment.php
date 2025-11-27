@@ -1,10 +1,12 @@
 <?php
-session_start();
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
+// Authorization check
 if (!isset($_SESSION['user_id'])) {
     header('Location: index.php?page=login');
     exit;
 }
-
 require_once __DIR__ . '/../app/controllers/AppointmentController.php';
 
 $appointmentCtrl = new AppointmentController();
