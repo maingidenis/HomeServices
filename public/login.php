@@ -45,11 +45,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             <p style="margin: 15px 0; color: #666;">Or sign in with:</p>
             
             <a href="oauth_login.php?provider=google" style="display: inline-block; padding: 12px 24px; margin: 5px; background-color: #4285F4; color: white; text-decoration: none; border-radius: 4px; font-weight: bold;">
-                🔷 Sign in with Google
+                Sign in with Google
             </a>
             
             <a href="oauth_login.php?provider=facebook" style="display: inline-block; padding: 12px 24px; margin: 5px; background-color: #1877F2; color: white; text-decoration: none; border-radius: 4px; font-weight: bold;">
-                📘 Sign in with Facebook
+                Sign in with Facebook
             </a>
         </div>
 </form>
