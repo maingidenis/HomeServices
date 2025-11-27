@@ -2,21 +2,43 @@
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
+
 require_once __DIR__ . '/../app/controllers/UserController.php';
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $ctrl = new UserController();
-    $user_id = $ctrl->loginUser($_POST['email'], $_POST['password']);
+    $email = $_POST['email'] ?? '';
+    $password = $_POST['password'] ?? '';
+
+    $user_id = $ctrl->loginUser($email, $password);
+
     if ($user_id) {
+        // Save user ID in session
         $_SESSION['user_id'] = $user_id;
-        echo "<script>alert('Login successful'); window.location.href='index.php?page=dashboard';</script>";
+
+        // Redirect to dashboard
+        header('Location: index.php?page=dashboard');
         exit;
     } else {
-        echo "<script>alert('Login failed: invalid email or password');</script>";
+        $error = "Login failed: invalid email or password";
     }
 }
 ?>
-<form method="post">
-    <input name="email" type="email" required>
-    <input name="password" type="password" required>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+</head>
+<body>
+<?php if (!empty($error)): ?>
+    <p style="color:red;"><?= htmlspecialchars($error) ?></p>
+<?php endif; ?>
+
+<form method="post" action="index.php?page=login">
+    <input name="email" type="email" required placeholder="Email">
+    <input name="password" type="password" required placeholder="Password">
     <button type="submit">Login</button>
 </form>
+</body>
+</html>
