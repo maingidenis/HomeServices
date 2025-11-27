@@ -16,11 +16,14 @@ switch ($page) {
     case 'appointment':
         require_once 'appointment.php';
         break;
-    case 'visitlog':
-        require_once 'visitlog.php';
+        case 'service':
+        require_once 'service.php';
         break;
-    case 'notification':
-        require_once 'notification.php';
+    case 'visitlog':
+//         require_once 'visitlog.php';
+        break;
+    // case 'notification':
+//         require_once 'notification.php';
         break;
     case 'logout':
         session_destroy();
