@@ -1,77 +1,126 @@
 <?php
 /**
  * ServiceBooking Model
- * Handles Special General Service bookings with security and privacy features
+ * Handles Special General Service bookings using existing service and servicepackage tables
+ * Integrated with existing schema for home_services database
  */
-require_once __DIR__ . '/../../config/Database.php';
-
 class ServiceBooking {
     private $conn;
+    private $table = 'service_bookings';
     
-    public function __construct() {
-        $db = new Database();
-        $this->conn = $db->connect();
+    public function __construct($db) {
+        $this->conn = $db;
     }
     
     /**
-     * Create a new service booking with sanitized inputs
+     * Create a new service booking linked to existing service/package
      */
     public function createBooking($data) {
-        // Sanitize all inputs
-        $name = $this->sanitize($data['name']);
-        $email = filter_var($data['email'], FILTER_SANITIZE_EMAIL);
-        $mobile = preg_replace('/[^0-9+]/', '', $data['mobile']);
-        $service_type = $this->sanitize($data['service_type']);
-        $preferred_date = $this->sanitize($data['preferred_date']);
-        $duration = $this->sanitize($data['duration']);
-        $preferred_cost = floatval($data['preferred_cost']);
-        $address = $this->sanitize($data['address']);
-        $additional_details = $this->sanitize($data['additional_details']);
-        $covid_vaccinated = isset($data['covid_vaccinated']) ? 1 : 0;
-        $covid_test_required = isset($data['covid_test_required']) ? 1 : 0;
-        $mask_required = isset($data['mask_required']) ? 1 : 0;
-        $user_id = intval($data['user_id']);
+        $bookingRef = $this->generateBookingRef();
         
-        // Generate unique booking reference
-        $booking_ref = $this->generateBookingRef();
+        $query = "INSERT INTO " . $this->table . " 
+            (booking_ref, user_id, service_id, package_id, name, email, mobile,
+             preferred_date, duration, preferred_cost, address, additional_details,
+             covid_vaccinated, covid_test_required, mask_required, status)
+            VALUES
+            (:booking_ref, :user_id, :service_id, :package_id, :name, :email, :mobile,
+             :preferred_date, :duration, :preferred_cost, :address, :additional_details,
+             :covid_vaccinated, :covid_test_required, :mask_required, 'pending')";
         
-        $sql = "INSERT INTO ServiceBooking 
-                (booking_ref, user_id, name, email, mobile, service_type, preferred_date, 
-                 duration, preferred_cost, address, additional_details, 
-                 covid_vaccinated, covid_test_required, mask_required, status, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())";
-        
-        $stmt = $this->conn->prepare($sql);
-        return $stmt->execute([
-            $booking_ref, $user_id, $name, $email, $mobile, $service_type,
-            $preferred_date, $duration, $preferred_cost, $address, $additional_details,
-            $covid_vaccinated, $covid_test_required, $mask_required
-        ]) ? $booking_ref : false;
+        try {
+            $stmt = $this->conn->prepare($query);
+            
+            $stmt->bindParam(':booking_ref', $bookingRef);
+            $stmt->bindParam(':user_id', $data['user_id']);
+            $stmt->bindParam(':service_id', $data['service_id']);
+            $stmt->bindParam(':package_id', $data['package_id']);
+            $stmt->bindParam(':name', $this->sanitize($data['name']));
+            $stmt->bindParam(':email', filter_var($data['email'], FILTER_SANITIZE_EMAIL));
+            $stmt->bindParam(':mobile', preg_replace('/[^0-9+]/', '', $data['mobile']));
+            $stmt->bindParam(':preferred_date', $data['preferred_date']);
+            $stmt->bindParam(':duration', $this->sanitize($data['duration'] ?? ''));
+            $stmt->bindParam(':preferred_cost', $data['preferred_cost'] ?? null);
+            $stmt->bindParam(':address', $this->sanitize($data['address']));
+            $stmt->bindParam(':additional_details', $this->sanitize($data['additional_details'] ?? ''));
+            $stmt->bindParam(':covid_vaccinated', $data['covid_vaccinated'] ?? 0);
+            $stmt->bindParam(':covid_test_required', $data['covid_test_required'] ?? 0);
+            $stmt->bindParam(':mask_required', $data['mask_required'] ?? 0);
+            
+            if ($stmt->execute()) {
+                return [
+                    'success' => true,
+                    'booking_id' => $this->conn->lastInsertId(),
+                    'booking_ref' => $bookingRef
+                ];
+            }
+            return false;
+        } catch (PDOException $e) {
+            error_log('ServiceBooking createBooking error: ' . $e->getMessage());
+            return false;
+        }
     }
     
     /**
-     * Get booking by reference
+     * Get booking by reference with service and package details
      */
-    public function getByRef($booking_ref) {
-        $stmt = $this->conn->prepare("SELECT * FROM ServiceBooking WHERE booking_ref = ?");
-        $stmt->execute([$booking_ref]);
+    public function getByRef($bookingRef) {
+        $query = "SELECT sb.*, s.title as service_title, s.category, s.provider_id,
+                         sp.name as package_name, sp.final_price as package_price
+                  FROM " . $this->table . " sb
+                  LEFT JOIN service s ON sb.service_id = s.service_id
+                  LEFT JOIN servicepackage sp ON sb.package_id = sp.package_id
+                  WHERE sb.booking_ref = :booking_ref";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':booking_ref', $bookingRef);
+        $stmt->execute();
+        
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
     
     /**
-     * Get all bookings for a user
+     * Get all bookings for a user with service details
      */
-    public function getByUserId($user_id) {
-        $stmt = $this->conn->prepare("SELECT * FROM ServiceBooking WHERE user_id = ? ORDER BY created_at DESC");
-        $stmt->execute([$user_id]);
+    public function getByUserId($userId) {
+        $query = "SELECT sb.*, s.title as service_title, s.category,
+                         sp.name as package_name, sp.final_price as package_price
+                  FROM " . $this->table . " sb
+                  LEFT JOIN service s ON sb.service_id = s.service_id
+                  LEFT JOIN servicepackage sp ON sb.package_id = sp.package_id
+                  WHERE sb.user_id = :user_id
+                  ORDER BY sb.created_at DESC";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':user_id', $userId);
+        $stmt->execute();
+        
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     
     /**
-     * Get all bookings (for admin)
+     * Get all service packages for booking selection
      */
-    public function getAll() {
-        $stmt = $this->conn->prepare("SELECT * FROM ServiceBooking ORDER BY created_at DESC");
+    public function getActivePackages() {
+        $query = "SELECT * FROM servicepackage WHERE is_active = 1 ORDER BY final_price ASC";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    /**
+     * Get all services with location data for nearby search
+     */
+    public function getServicesByCategory($category = null) {
+        $query = "SELECT * FROM service WHERE 1=1";
+        if ($category) {
+            $query .= " AND category = :category";
+        }
+        $query .= " ORDER BY rating DESC";
+        
+        $stmt = $this->conn->prepare($query);
+        if ($category) {
+            $stmt->bindParam(':category', $category);
+        }
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -79,29 +128,68 @@ class ServiceBooking {
     /**
      * Update booking status
      */
-    public function updateStatus($booking_id, $status) {
-        $allowed_statuses = ['pending', 'confirmed', 'in_progress', 'completed', 'cancelled'];
-        if (!in_array($status, $allowed_statuses)) {
+    public function updateStatus($bookingId, $status) {
+        $validStatuses = ['pending', 'confirmed', 'in_progress', 'completed', 'cancelled'];
+        if (!in_array($status, $validStatuses)) {
             return false;
         }
-        $stmt = $this->conn->prepare("UPDATE ServiceBooking SET status = ? WHERE booking_id = ?");
-        return $stmt->execute([$status, $booking_id]);
+        
+        $query = "UPDATE " . $this->table . " SET status = :status WHERE booking_id = :booking_id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':status', $status);
+        $stmt->bindParam(':booking_id', $bookingId);
+        
+        return $stmt->execute();
     }
     
     /**
-     * Add inspection findings to booking
+     * Add inspection findings after service completion
      */
-    public function addInspectionFindings($booking_id, $findings) {
-        $findings = $this->sanitize($findings);
-        $stmt = $this->conn->prepare("UPDATE ServiceBooking SET inspection_findings = ? WHERE booking_id = ?");
-        return $stmt->execute([$findings, $booking_id]);
+    public function addInspectionFindings($bookingId, $findings) {
+        $query = "UPDATE " . $this->table . " 
+                  SET inspection_findings = :findings 
+                  WHERE booking_id = :booking_id";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':findings', $this->sanitize($findings));
+        $stmt->bindParam(':booking_id', $bookingId);
+        
+        return $stmt->execute();
+    }
+    
+    /**
+     * Get all bookings (admin function)
+     */
+    public function getAll($limit = 50) {
+        $query = "SELECT sb.*, s.title as service_title, sp.name as package_name
+                  FROM " . $this->table . " sb
+                  LEFT JOIN service s ON sb.service_id = s.service_id
+                  LEFT JOIN servicepackage sp ON sb.package_id = sp.package_id
+                  ORDER BY sb.created_at DESC LIMIT :limit";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+        
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    /**
+     * Count total bookings
+     */
+    public function countAll() {
+        $query = "SELECT COUNT(*) as total FROM " . $this->table;
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['total'];
     }
     
     /**
      * Generate unique booking reference
      */
     private function generateBookingRef() {
-        return 'HSB-' . strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 8));
+        return 'SB-' . strtoupper(substr(uniqid(), -8)) . '-' . rand(100, 999);
     }
     
     /**
@@ -110,13 +198,4 @@ class ServiceBooking {
     private function sanitize($input) {
         return htmlspecialchars(strip_tags(trim($input)), ENT_QUOTES, 'UTF-8');
     }
-    
-    /**
-     * Count all bookings
-     */
-    public function countAll() {
-        $stmt = $this->conn->query("SELECT COUNT(*) FROM ServiceBooking");
-        return $stmt->fetchColumn();
-    }
 }
-?>
