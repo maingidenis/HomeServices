@@ -31,7 +31,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // ADMIN vs CLIENT redirect
         if ($user['role'] === 'admin') {
             header("Location: admin/dashboard.php");
-        } else {
+        }
+        elseif ($user['role'] === 'provider') {
+            header("Location: provider/dashboard.php");
+        } 
+        else {
             header("Location: index.php?page=dashboard");
         }
         exit;
