@@ -11,6 +11,21 @@ class User {
         $stmt = $this->conn->prepare("INSERT INTO User (name, email, password_hash, role) VALUES (?, ?, ?, ?)");
         return $stmt->execute([$name, $email, $hash, $role]);
     }
+    public function getAllUsers() {
+        $stmt = $this->conn->query("SELECT * FROM User ORDER BY user_id ASC");
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    public function findById($user_id) {
+        $stmt = $this->conn->prepare("SELECT * FROM User WHERE user_id = ?");
+        $stmt->execute([$user_id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function updateRole($user_id, $role) {
+        $stmt = $this->conn->prepare("UPDATE User SET role = ? WHERE user_id = ?");
+        return $stmt->execute([$role, $user_id]);
+    }
+
     public function login($email, $password) {
         $stmt = $this->conn->prepare("SELECT user_id, password_hash FROM User WHERE email = ?");
         $stmt->execute([$email]);
@@ -24,6 +39,32 @@ class User {
         $stmt = $this->conn->prepare("UPDATE User SET health_status = ? WHERE user_id = ?");
         return $stmt->execute([$status, $user_id]);
     }
+
+    public function setOTP($user_id, $otp, $expires) {
+        $stmt = $this->conn->prepare("UPDATE User SET otp_code=?, otp_expires_at=? WHERE user_id=?");
+        return $stmt->execute([$otp, $expires, $user_id]);
+    }
+
+    public function verifyOTP($user_id, $otp) {
+        $stmt = $this->conn->prepare("SELECT otp_code, otp_expires_at FROM User WHERE user_id=?");
+        $stmt->execute([$user_id]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$row) return false;
+        if ($row['otp_code'] !== $otp) return false;
+        if (strtotime($row['otp_expires_at']) < time()) return false; // expired
+
+        return true;
+    }
+
+    public function emailExists($email) {
+        $stmt = $this->conn->prepare("SELECT user_id FROM User WHERE email = ?");
+        $stmt->execute([$email]);
+        return $stmt->fetch(PDO::FETCH_ASSOC) ? true : false;
+    }
+
+
+
 
     // Dashboard related methods
     public function countAll() {

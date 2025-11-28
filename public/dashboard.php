@@ -1,4 +1,8 @@
 <?php
+// require_once __DIR__ . '/../app/middleware/auth.php';
+// require_once __DIR__ . '/../app/middleware/admin_only.php';
+require_once __DIR__ . '/../app/middleware/mfa.php';
+
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
@@ -12,6 +16,8 @@ if (!isset($_SESSION['user_id'])) {
 require_once __DIR__ . '/../app/models/User.php';
 require_once __DIR__ . '/../app/models/Appointment.php';
 require_once __DIR__ . '/../app/models/Service.php';
+require_once __DIR__ . '/../app/middleware/mfa.php';
+
 
 $userModel = new User();
 $appointmentModel = new Appointment();
@@ -54,6 +60,7 @@ $totalServices = safeCount($serviceModel);
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+
   <div class="container-fluid">
     <a class="navbar-brand" href="#">Home Services App</a>
     <div>

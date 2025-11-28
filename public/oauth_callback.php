@@ -97,14 +97,22 @@ try {
     if ($user_id) {
         // Save user ID in session
         $_SESSION['user_id'] = $user_id;
-        
-        // Clear OAuth session variables
+
+        // FETCH ROLE  
+        $model = new User();
+        $user = $model->findById($user_id);
+        $_SESSION['role'] = $user['role'];
+
         unset($_SESSION['oauth_state']);
         unset($_SESSION['oauth_provider']);
-        
-        // Redirect to dashboard
-        header('Location: index.php?page=dashboard');
-        exit;
+
+        // Redirect based on role
+        if ($user['role'] === 'admin') {
+            header('Location: dashboard.php'); // admin view
+        } else {
+            header('Location: index.php?page=dashboard');
+            exit;
+        }
     } else {
         die('Error: Failed to login/register user.');
     }
