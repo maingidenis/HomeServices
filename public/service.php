@@ -416,8 +416,7 @@ $userBookings = $serviceBooking->getByUserId($_SESSION['user_id']);
         
         // Initialize map
         document.addEventListener('DOMContentLoaded', function() {
-            map = L.map('map').setView([-33.8688, 151.2093], 10);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                map = L.map('map').setView([-34.9285, 138.6007], 13); // Adelaide, South Australia            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; OpenStreetMap contributors'
             }).addTo(map);
         });
@@ -501,6 +500,25 @@ $userBookings = $serviceBooking->getByUserId($_SESSION['user_id']);
             
             document.getElementById('providerResults').innerHTML = html || '<p class="text-center text-muted">No providers found in this area.</p>';
         }
+
+                // Add placeholder provider markers around Adelaide
+        const adelaideCenter = [-34.9285, 138.6007];
+        const placeholderProviders = [
+            { lat: -34.9185, lng: 138.6007, name: 'Provider 1 - North' },
+            { lat: -34.9385, lng: 138.6007, name: 'Provider 2 - South' },
+            { lat: -34.9285, lng: 138.5907, name: 'Provider 3 - West' },
+            { lat: -34.9285, lng: 138.6107, name: 'Provider 4 - East' },
+            { lat: -34.9235, lng: 138.5957, name: 'Provider 5 - Northwest' },
+            { lat: -34.9235, lng: 138.6057, name: 'Provider 6 - Northeast' },
+            { lat: -34.9335, lng: 138.5957, name: 'Provider 7 - Southwest' },
+            { lat: -34.9335, lng: 138.6057, name: 'Provider 8 - Southeast' }
+        ];
+
+        placeholderProviders.forEach(provider => {
+            const marker = L.marker([provider.lat, provider.lng]).addTo(map)
+                .bindPopup(`<b>${provider.name}</b><br>Sample service provider<br><small>Click to book</small>`);
+            markers.push(marker);
+        });
         
         function bookProvider(providerId) {
             window.location.href = 'book_provider.php?id=' + providerId;
