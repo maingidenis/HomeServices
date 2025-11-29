@@ -1,0 +1,1 @@
+<contents_of_the_reverted_file>
