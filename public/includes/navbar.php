@@ -13,8 +13,15 @@ $currentDir = basename(dirname($_SERVER['PHP_SELF']));
 $isAdmin = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
 $isProvider = isset($_SESSION['role']) && $_SESSION['role'] === 'provider';
 $isLoggedIn = isset($_SESSION['user_id']);
-$userName = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username']) : 'User';
-?>
+// Fetch user name from database if logged in
+if (isset($_SESSION['user_id'])) {
+    require_once __DIR__ . '/../../app/models/User.php';
+    $userModel = new User();
+    $userData = $userModel->getById($_SESSION['user_id']);
+    $userName = $userData ? htmlspecialchars($userData['name'], ENT_QUOTES, 'UTF-8') : 'User';
+} else {
+    $userName = 'User';
+}?>
 
 <!-- Navigation -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
