@@ -416,7 +416,8 @@ $userBookings = $serviceBooking->getByUserId($_SESSION['user_id']);
         
         // Initialize map
         document.addEventListener('DOMContentLoaded', function() {
-                map = L.map('map').setView([-34.9285, 138.6007], 13); // Adelaide, South Australia            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            map = L.map('map').setView([-34.9285, 138.6007], 13); // Adelaide, South Australia
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; OpenStreetMap contributors'
             }).addTo(map);
         });
