@@ -17,7 +17,7 @@ $isLoggedIn = isset($_SESSION['user_id']);
 if (isset($_SESSION['user_id'])) {
     require_once __DIR__ . '/../../app/models/User.php';
     $userModel = new User();
-    $userData = $userModel->getById($_SESSION['user_id']);
+    $userData = $userModel->findById($_SESSION['user_id']);
     $userName = $userData ? htmlspecialchars($userData['name'], ENT_QUOTES, 'UTF-8') : 'User';
 } else {
     $userName = 'User';
@@ -78,10 +78,10 @@ if (isset($_SESSION['user_id'])) {
                         <i class="bi bi-person-circle"></i> <?= $userName ?>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
-                        <li><a class="dropdown-item" href="profile.php"><i class="bi bi-person"></i> Profile</a></li>
-                        <li><a class="dropdown-item" href="settings.php"><i class="bi bi-gear"></i> Settings</a></li>
+                        <li><a class="dropdown-item" href="index.php?page=profile"><i class="bi bi-person"></i> Profile</a></li>
+                        <li><a class="dropdown-item" href="index.php?page=settings"><i class="bi bi-gear"></i> Settings</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" href="logout.php"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+                        <li><a class="dropdown-item text-danger" href="index.php?page=logout"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
                     </ul>
                 </li>
                 <?php else: ?>

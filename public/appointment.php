@@ -24,6 +24,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 }
 
 $appointments = $appointmentCtrl->getAllAppointments();
+$pageTitle = 'Appointments - Home Services';
+include 'includes/header.php';
 ?>
 
 <!DOCTYPE html>

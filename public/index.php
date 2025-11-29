@@ -20,10 +20,16 @@ switch ($page) {
         require_once 'service.php';
         break;
     case 'visitlog':
-//         require_once 'visitlog.php';
+         require_once 'visitlog.php';
         break;
     // case 'notification':
 //         require_once 'notification.php';
+        break;
+    case 'profile':
+        require_once __DIR__ . '/includes/profile.php';
+        break;
+    case 'settings':
+        require_once __DIR__ . '/includes/settings.php';
         break;
     case 'logout':
         session_destroy();
