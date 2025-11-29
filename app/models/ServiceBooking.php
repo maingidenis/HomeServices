@@ -83,7 +83,7 @@ class ServiceBooking {
      */
     public function getByUserId($userId) {
         $query = "SELECT sb.*, s.title as service_title, s.category,
-                         sp.name as package_name, sp.final_price as package_price
+                  COALESCE(sp.name, 'No Package') as package_name, COALESCE(sp.final_price, 0) as package_price
                   FROM " . $this->table . " sb
                   LEFT JOIN service s ON sb.service_id = s.service_id
                   LEFT JOIN servicepackage sp ON sb.package_id = sp.package_id
