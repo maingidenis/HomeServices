@@ -3,6 +3,9 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
+ERROR_REPORTING(E_ALL);
+ini_set('display_errors', 1);
+
 // Authorization check
 if (!isset($_SESSION['user_id'])) {
     header('Location: index.php?page=login');
@@ -18,6 +21,18 @@ $db = $database->getConnection();
 $serviceBooking = new ServiceBooking($db);
 $serviceProvider = new ServiceProvider($db);
 
+function getServiceTypeDisplayName($serviceType) {
+    $serviceTypes = [
+        'full_inspection' => 'Full House Inspection',
+        'plumbing_check' => 'Plumbing Check',
+        'electrical_check' => 'Electrical Check',
+        'structural_check' => 'Structural Assessment',
+        'safety_audit' => 'Safety Audit',
+        'general_maintenance' => 'General Maintenance'
+    ];
+    return $serviceTypes[$serviceType] ?? ucfirst(str_replace('_', ' ', $serviceType));
+}
+
 $message = '';
 $messageType = '';
 $activeTab = isset($_GET['tab']) ? $_GET['tab'] : 'general';
@@ -27,6 +42,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['booking_type'])) {
     if ($_POST['booking_type'] === 'general') {
         $bookingData = [
             'user_id' => $_SESSION['user_id'],
+            'service_id' => null,
+            'package_id' => null,
             'name' => filter_input(INPUT_POST, 'name', FILTER_SANITIZE_SPECIAL_CHARS),
             'email' => filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL),
             'mobile' => filter_input(INPUT_POST, 'mobile', FILTER_SANITIZE_SPECIAL_CHARS),
@@ -84,7 +101,7 @@ $userBookings = $serviceBooking->getByUserId($_SESSION['user_id']);
                     <li class="nav-item"><a class="nav-link" href="appointments.php">Appointments</a></li>
                 </ul>
                 <ul class="navbar-nav">
-                    <li class="nav-item"><a class="nav-link" href="logout.php"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.php?page=logout"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
                 </ul>
             </div>
         </div>
@@ -359,7 +376,7 @@ $userBookings = $serviceBooking->getByUserId($_SESSION['user_id']);
                                     <?php foreach ($userBookings as $booking): ?>
                                     <tr>
                                         <td><code><?= htmlspecialchars($booking['booking_ref']) ?></code></td>
-                                        <td><?= htmlspecialchars($booking['service_type']) ?></td>
+                                        <td><?= htmlspecialchars(getServiceTypeDisplayName($booking['service_type']))  ?? 'General Service' ?></td>
                                         <td><?= htmlspecialchars($booking['preferred_date']) ?></td>
                                         <td>
                                             <?php
@@ -399,7 +416,7 @@ $userBookings = $serviceBooking->getByUserId($_SESSION['user_id']);
         
         // Initialize map
         document.addEventListener('DOMContentLoaded', function() {
-            map = L.map('map').setView([-33.8688, 151.2093], 10); // Sydney default
+            map = L.map('map').setView([-33.8688, 151.2093], 10);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; OpenStreetMap contributors'
             }).addTo(map);

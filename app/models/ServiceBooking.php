@@ -18,53 +18,72 @@ class ServiceBooking {
     public function createBooking($data) {
         $bookingRef = $this->generateBookingRef();
         
+        // Sanitize and prepare all variables BEFORE binding
+        $name = $this->sanitize($data['name']);
+        $email = filter_var($data['email'], FILTER_SANITIZE_EMAIL);
+        $mobile = preg_replace('/[^0-9+]/', '', $data['mobile']);
+        $preferred_date = $data['preferred_date'];
+        $duration = $this->sanitize($data['duration'] ?? '');
+        $preferred_cost = $data['preferred_cost'] ?? null;
+        $address = $this->sanitize($data['address']);
+        $additional_details = $this->sanitize($data['additional_details'] ?? '');
+        $covid_vaccinated = $data['covid_vaccinated'] ?? 0;
+        $covid_test_required = $data['covid_test_required'] ?? 0;
+        $mask_required = $data['mask_required'] ?? 0;
+        $user_id = $data['user_id'];
+        $service_id = $data['service_id'];
+        $service_type = $data['service_type'];
+        $package_id = $data['package_id'];
+        
         $query = "INSERT INTO " . $this->table . " 
-            (booking_ref, user_id, service_id, package_id, name, email, mobile,
-             preferred_date, duration, preferred_cost, address, additional_details,
-             covid_vaccinated, covid_test_required, mask_required, status)
+            (booking_ref, user_id, service_id, service_type, package_id, name, email, mobile,
+            preferred_date, duration, preferred_cost, address, additional_details,
+            covid_vaccinated, covid_test_required, mask_required, status)
             VALUES
-            (:booking_ref, :user_id, :service_id, :package_id, :name, :email, :mobile,
-             :preferred_date, :duration, :preferred_cost, :address, :additional_details,
-             :covid_vaccinated, :covid_test_required, :mask_required, 'pending')";
+            (:booking_ref, :user_id, :service_id, :service_type, :package_id, :name, :email, :mobile,
+            :preferred_date, :duration, :preferred_cost, :address, :additional_details,
+            :covid_vaccinated, :covid_test_required, :mask_required, 'pending')";
         
         try {
             $stmt = $this->conn->prepare($query);
             
+            // Now bind the variables (not function results)
             $stmt->bindParam(':booking_ref', $bookingRef);
-            $stmt->bindParam(':user_id', $data['user_id']);
-            $stmt->bindParam(':service_id', $data['service_id']);
-            $stmt->bindParam(':package_id', $data['package_id']);
-            $stmt->bindParam(':name', $this->sanitize($data['name']));
-            $stmt->bindParam(':email', filter_var($data['email'], FILTER_SANITIZE_EMAIL));
-            $stmt->bindParam(':mobile', preg_replace('/[^0-9+]/', '', $data['mobile']));
-            $stmt->bindParam(':preferred_date', $data['preferred_date']);
-            $stmt->bindParam(':duration', $this->sanitize($data['duration'] ?? ''));
-            $stmt->bindParam(':preferred_cost', $data['preferred_cost'] ?? null);
-            $stmt->bindParam(':address', $this->sanitize($data['address']));
-            $stmt->bindParam(':additional_details', $this->sanitize($data['additional_details'] ?? ''));
-            $stmt->bindParam(':covid_vaccinated', $data['covid_vaccinated'] ?? 0);
-            $stmt->bindParam(':covid_test_required', $data['covid_test_required'] ?? 0);
-            $stmt->bindParam(':mask_required', $data['mask_required'] ?? 0);
-            
-            if ($stmt->execute()) {
-                return [
-                    'success' => true,
-                    'booking_id' => $this->conn->lastInsertId(),
-                    'booking_ref' => $bookingRef
-                ];
-            }
-            return false;
-        } catch (PDOException $e) {
-            error_log('ServiceBooking createBooking error: ' . $e->getMessage());
-            return false;
+            $stmt->bindParam(':user_id', $user_id);
+            $stmt->bindParam(':service_id', $service_id);
+            $stmt->bindParam(':service_type', $service_type);
+            $stmt->bindParam(':package_id', $package_id);
+            $stmt->bindParam(':name', $name);
+            $stmt->bindParam(':email', $email);
+            $stmt->bindParam(':mobile', $mobile);
+            $stmt->bindParam(':preferred_date', $preferred_date);
+            $stmt->bindParam(':duration', $duration);
+            $stmt->bindParam(':preferred_cost', $preferred_cost);
+            $stmt->bindParam(':address', $address);
+            $stmt->bindParam(':additional_details', $additional_details);
+            $stmt->bindParam(':covid_vaccinated', $covid_vaccinated, PDO::PARAM_INT);
+            $stmt->bindParam(':covid_test_required', $covid_test_required, PDO::PARAM_INT);
+            $stmt->bindParam(':mask_required', $mask_required, PDO::PARAM_INT);
+        
+        if ($stmt->execute()) {
+            return [
+                'success' => true,
+                'booking_id' => $this->conn->lastInsertId(),
+                'booking_ref' => $bookingRef
+            ];
         }
+        return false;
+    } catch (PDOException $e) {
+        error_log('ServiceBooking createBooking error: ' . $e->getMessage());
+        return false;
     }
+}
     
     /**
      * Get booking by reference with service and package details
      */
     public function getByRef($bookingRef) {
-        $query = "SELECT sb.*, s.title as service_title, s.category, s.provider_id,
+        $query = "SELECT sb.*, s.title as service_title, sb.service_type, s.category, s.provider_id,
                          sp.name as package_name, sp.final_price as package_price
                   FROM " . $this->table . " sb
                   LEFT JOIN service s ON sb.service_id = s.service_id
@@ -83,7 +102,7 @@ class ServiceBooking {
      */
     public function getByUserId($userId) {
         $query = "SELECT sb.*, s.title as service_title, s.category,
-                  COALESCE(sp.name, 'No Package') as package_name, COALESCE(sp.final_price, 0) as package_price
+                  COALESCE(sp.package_name, 'No Package') as package_name, COALESCE(sp.price, 0) as package_price
                   FROM " . $this->table . " sb
                   LEFT JOIN service s ON sb.service_id = s.service_id
                   LEFT JOIN servicepackage sp ON sb.package_id = sp.package_id
