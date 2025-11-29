@@ -15,5 +15,12 @@ class Database {
         }
         return $this->conn;
     }
+
+        public function getConnection() {
+        if ($this->conn === null) {
+            $this->connect();
+        }
+        return $this->conn;
+    }
 }
 ?>
