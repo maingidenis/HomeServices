@@ -112,7 +112,13 @@ class User {
         $stmt = $this->conn->prepare("UPDATE User SET oauth_provider = ?, oauth_id = ?, profile_picture = ? WHERE user_id = ?");
         return $stmt->execute([$provider, $oauth_id, $picture, $user_id]);
     }
-    
+
+    public function adminExists() {
+    $stmt = $this->conn->prepare("SELECT COUNT(*) AS total FROM User WHERE role = 'admin'");
+    $stmt->execute();
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $row['total'] > 0;
+}  
     
 }
 ?>

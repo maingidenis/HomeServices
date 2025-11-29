@@ -1,0 +1,5 @@
+RewriteEngine On
+
+# Deny access to all admin pages without valid session
+RewriteCond %{HTTP_COOKIE} !PHPSESSID
+RewriteRule ^.*$ /index.php?page=login [R=302,L]

@@ -6,8 +6,10 @@ $oldName = '';
 $oldEmail = '';
 $oldRole = 'client';
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $ctrl = new UserController();
+    $adminExists = $ctrl->adminExists();
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Get raw values with defaults
     $rawName     = $_POST['name']     ?? '';
@@ -43,11 +45,38 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $error = "Password is required.";
     }
 
+    // 3b) Strong password validation
+    if (!empty($rawPassword)) {
+        $password = $rawPassword;
+
+        // At least 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char
+        $pattern = "/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[\W_]).{8,}$/";
+
+        if (!preg_match($pattern, $password)) {
+            $error = "
+                    <strong>Password must contain:</strong>
+                    <ul>
+                        <li>Minimum 8 characters</li>
+                        <li>At least 1 uppercase letter</li>
+                        <li>At least 1 lowercase letter</li>
+                        <li>At least 1 number</li>
+                        <li>At least 1 special character</li>
+                    </ul>";
+        }
+    }
+
+
     // 4) Role: whitelist
     $allowedRoles = ['client', 'provider', 'admin'];
     if (!in_array($rawRole, $allowedRoles, true)) {
         $error = "Invalid role selected.";
     }
+
+    // 4b) Prevent registration as admin if an admin already exists
+    if ($rawRole === 'admin' && $adminExists) {
+        $error = "An administrator already exists. You cannot register as an admin.";
+    }
+
 
     if (empty($error)) {
         $password = $rawPassword;
@@ -77,7 +106,7 @@ include 'includes/header.php';
                 <div class="card-body">
                     <?php if (!empty($error)): ?>
                         <div class="alert alert-danger" role="alert">
-                            <i class="bi bi-exclamation-triangle"></i> <?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?>
+                            <i class="bi bi-exclamation-triangle"></i> <?= $error ?>
                         </div>
                     <?php endif; ?>
 
@@ -120,7 +149,10 @@ include 'includes/header.php';
                                 <option value="" disabled>Select your role</option>
                                 <option value="client" <?= $oldRole === 'client' ? 'selected' : '' ?>>Client</option>
                                 <option value="provider" <?= $oldRole === 'provider' ? 'selected' : '' ?>>Service Provider</option>
-                                <option value="admin" <?= $oldRole === 'admin' ? 'selected' : '' ?>>Admin</option>
+
+                                <?php if (!$adminExists): ?>
+                                    <option value="admin" <?= $oldRole === 'admin' ? 'selected' : '' ?>>Admin</option>
+                                <?php endif; ?>
                             </select>
                         </div>
                         <button type="submit" class="btn btn-success w-100 mb-3">

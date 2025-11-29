@@ -12,6 +12,12 @@ class UserController {
     public function setHealthStatus($user_id, $status) {
         $model = new User();
         return $model->updateHealthStatus($user_id, $status);
-    }    
+    }
+    public function adminExists() {
+    $model = new User();
+    return $model->adminExists();
+}
+
+    
 }
 ?>

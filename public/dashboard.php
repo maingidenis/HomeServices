@@ -48,7 +48,7 @@ include 'includes/header.php';
 ?>
 
 <!-- Main Content -->
-<main class="container py-4">
+<main class="container py-4 flex-grow-1">
     <!-- Stats Cards -->
     <div class="row g-4 mb-4">
         <div class="col-md-4">

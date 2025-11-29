@@ -22,8 +22,8 @@ switch ($page) {
     case 'visitlog':
          require_once 'visitlog.php';
         break;
-    // case 'notification':
-//         require_once 'notification.php';
+     case 'notification':
+         require_once 'notification.php';
         break;
     case 'profile':
         require_once __DIR__ . '/includes/profile.php';

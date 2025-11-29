@@ -90,15 +90,15 @@ $userBookings = $serviceBooking->getByUserId($_SESSION['user_id']);
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <a class="navbar-brand" href="dashboard.php"><i class="bi bi-house-door"></i> HomeServices</a>
+            <a class="navbar-brand" href="index.php?page=dashboard"><i class="bi bi-house-door"></i> HomeServices</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
-                    <li class="nav-item"><a class="nav-link" href="dashboard.php">Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="service.php">Services</a></li>
-                    <li class="nav-item"><a class="nav-link" href="appointments.php">Appointments</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.php?page=dashboard">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="index.php?page=service">Services</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.php?page=appointment">Appointments</a></li>
                 </ul>
                 <ul class="navbar-nav">
                     <li class="nav-item"><a class="nav-link" href="index.php?page=logout"><i class="bi bi-box-arrow-right"></i> Logout</a></li>

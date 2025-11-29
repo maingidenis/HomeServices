@@ -5,6 +5,9 @@ require_once __DIR__ . '/../../app/models/User.php';
 
 $model = new User();
 $totalUsers = $model->countAll();
+$user = $model->findById($_SESSION['user_id']);
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -44,9 +47,7 @@ $totalUsers = $model->countAll();
                     </li>
                 </ul>
                 <div class="d-flex">
-                    <a class="btn btn-outline-light" href="../logout.php">
-                        <i class="bi bi-box-arrow-right"></i> Logout
-                    </a>
+                    <a href="../logout.php" class="btn btn-danger">Logout</a>
                 </div>
             </div>
         </div>
@@ -57,7 +58,7 @@ $totalUsers = $model->countAll();
         <div class="row mb-4">
             <div class="col">
                 <h2><i class="bi bi-shield-check"></i> Admin Dashboard</h2>
-                <p class="text-muted">Welcome, <?= htmlspecialchars($_SESSION['user_id']); ?> (Admin)</p>
+                <p class="text-muted">Welcome, <?= htmlspecialchars($user['name']); ?> (Admin)</p>
             </div>
         </div>
 

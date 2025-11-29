@@ -26,7 +26,8 @@
     <style><?= $customStyles ?></style>
     <?php endif; ?>
 </head>
-<body class="bg-light">
+<body class="bg-light d-flex flex-column min-vh-100">
+
 <?php
 // Start session if not already started
 if (session_status() !== PHP_SESSION_ACTIVE) {
