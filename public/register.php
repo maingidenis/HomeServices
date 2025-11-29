@@ -1,11 +1,4 @@
 <?php
-/**
- * Registration Page
- * 
- * Handles new user registration with form validation.
- * Uses shared header and footer includes for consistent styling.
- */
-
 require_once __DIR__ . '/../app/controllers/UserController.php';
 
 $error = '';
@@ -35,8 +28,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // 1) Name: strip tags + length check
     $name = strip_tags($rawName);
-    if (strlen($name) < 2 || strlen($name) > 100) {
-        $error = "Name must be between 2 and 100 characters.";
+    if (empty($name) || strlen($name) < 2) {
+        $error = "Name is required and must be at least 2 characters.";
     }
 
     // 2) Email: sanitize + validate
@@ -45,13 +38,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $error = "Please enter a valid email address.";
     }
 
-    // 3) Password: at least 8 chars, must contain uppercase, lowercase, digit, and special char
-    if (strlen($rawPassword) < 8 ||
-        !preg_match('/[A-Z]/', $rawPassword) ||
-        !preg_match('/[a-z]/', $rawPassword) ||
-        !preg_match('/[0-9]/', $rawPassword) ||
-        !preg_match('/[^A-Za-z0-9]/', $rawPassword)) {
-        $error = "Password must be at least 8 characters and include uppercase, lowercase, number, and special character.";
+    // 3) Password: basic check (you can add stricter rules)
+    if (empty($rawPassword)) {
+        $error = "Password is required.";
     }
 
     // 4) Role: whitelist
@@ -61,12 +50,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     if (empty($error)) {
-        $result = $ctrl->register($name, $email, $rawPassword, $rawRole);
-        if ($result['success']) {
-            header('Location: index.php?page=login&registered=1');
+        $password = $rawPassword;
+        $user_id = $ctrl->registerUser($name, $email, $password, $rawRole);
+        if ($user_id) {
+            header('Location: index.php?page=login');
             exit;
         } else {
-            $error = htmlspecialchars($result['error'], ENT_QUOTES, 'UTF-8');
+            $error = "Registration failed. Email may already be in use.";
         }
     }
 }
@@ -87,7 +77,7 @@ include 'includes/header.php';
                 <div class="card-body">
                     <?php if (!empty($error)): ?>
                         <div class="alert alert-danger" role="alert">
-                            <i class="bi bi-exclamation-triangle"></i> <?= $error ?>
+                            <i class="bi bi-exclamation-triangle"></i> <?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?>
                         </div>
                     <?php endif; ?>
 
@@ -121,11 +111,8 @@ include 'includes/header.php';
                                 class="form-control" 
                                 id="password" 
                                 name="password" 
-                                placeholder="Create a strong password"
+                                placeholder="Create a password"
                                 required>
-                            <div class="form-text">
-                                At least 8 characters with uppercase, lowercase, number, and special character.
-                            </div>
                         </div>
                         <div class="mb-3">
                             <label for="role" class="form-label">Register as</label>
