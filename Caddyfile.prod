@@ -1,0 +1,8 @@
+# Production Caddyfile (for standalone binary)
+# Used when embedding app into FrankenPHP binary
+
+:80 { 
+    encode zstd br gzip 
+    root * {env.APP_ROOT} 
+    php_server 
+}

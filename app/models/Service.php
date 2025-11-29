@@ -1,11 +1,15 @@
 <?php
-require_once __DIR__ . '/../../config/Database.php';
+/**
+ * Service.php - Updated for SQLite + MySQL Dual-Mode
+ * Location: app/models/Service.php
+ */
 
 class Service {
     private $conn;
+
     public function __construct() {
-        $db = new Database();
-        $this->conn = $db->connect();
+        require_once __DIR__ . '/../../config/Database.php';
+        $this->conn = $GLOBALS['db']->getConnection();
     }
 
     public function create($title, $description, $provider_id, $category) {

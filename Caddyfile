@@ -1,0 +1,21 @@
+# FrankenPHP Caddyfile for HomeServices
+# Run with: frankenphp run
+# Listen on localhost
+http://localhost:8000 { 
+    # Enable compression 
+    encode zstd br gzip 
+
+    # Serve static files from public/ 
+    root * public 
+
+    # PHP files are served from public/ 
+    php_server 
+    file_server
+    
+    # Error handling 
+    handle_errors { 
+        root * . 
+        rewrite /error.html 
+        file_server 
+    }
+}

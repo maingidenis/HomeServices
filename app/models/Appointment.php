@@ -1,25 +1,32 @@
 <?php
-require_once __DIR__ . '/../../config/Database.php';
+/**
+ * Appointment.php - Updated for SQLite + MySQL Dual-Mode
+ * Location: app/models/Appointment.php
+ */
+
 class Appointment {
     private $conn;
+
     public function __construct() {
-        $db = new Database();
-        $this->conn = $db->connect();
+        require_once __DIR__ . '/../../config/Database.php';
+        $this->conn = $GLOBALS['db']->getConnection();
     }
+
     public function create($client_id, $service_id, $appointment_time, $status, $location) {
         $stmt = $this->conn->prepare("INSERT INTO Appointment (client_id, service_id, appointment_time, status, location) VALUES (?, ?, ?, ?, ?)");
         return $stmt->execute([$client_id, $service_id, $appointment_time, $status, $location]);
     }
+
     public function getById($id) {
         $stmt = $this->conn->prepare("SELECT * FROM Appointment WHERE appointment_id = ?");
         $stmt->execute([$id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+
     public function getAll() {
         $stmt = $this->conn->prepare("SELECT * FROM Appointment");
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    
 }
 ?>

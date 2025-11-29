@@ -1,4 +1,16 @@
 <?php
+// Load environment configuration from .env.local file
+$envFile = __DIR__ . '/../.env.local';
+
+if (file_exists($envFile)) {
+    $env = parse_ini_file($envFile, false, INI_SCANNER_RAW);
+    if (is_array($env)) {
+        foreach ($env as $key => $value) {
+            putenv($key . '=' . $value);
+        }
+    }
+}
+
 session_start();
 
 $page = $_GET['page'] ?? 'home';
