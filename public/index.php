@@ -37,9 +37,8 @@ switch ($page) {
         exit;
     case 'home':
     default:
-        echo "<h1>Welcome to the Home Services & Contact Tracing System</h1>";
-        echo "<a href='index.php?page=login'>Login</a> | ";
-        echo "<a href='index.php?page=register'>Register</a>";
-        break;
+        // Redirect to login page as default
+        header('Location: index.php?page=login');
+        exit;
 }
 ?>
