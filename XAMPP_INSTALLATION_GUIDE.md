@@ -83,7 +83,7 @@ C:\xampp\htdocs\HomeServices\
    - Click on the `homeservices` database (left sidebar)
    - Click **"Import"** tab at the top
    - Click **"Choose File"**
-   - Select `database_updates.sql` from your HomeServices folder
+   - Select `home_services.sql` from your HomeServices folder
    - Scroll down and click **"Import"**
    - Wait for "Import has been successfully finished" message ✅
 
@@ -99,7 +99,7 @@ mysql -u root -p
 ```sql
 CREATE DATABASE homeservices;
 USE homeservices;
-source C:/xampp/htdocs/HomeServices/database_updates.sql
+source C:/xampp/htdocs/HomeServices/home_services.sql
 EXIT;
 ```
 
