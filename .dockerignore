@@ -1,0 +1,17 @@
+.git
+.gitignore
+.DS_Store
+node_modules
+vendor/bin
+.idea
+.vscode
+*.log
+logs/
+.env
+.env.*.local
+tmp/
+cache/
+build/
+dist/
+homeservices*
+Dockerfile*
